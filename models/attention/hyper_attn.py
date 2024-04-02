@@ -109,6 +109,9 @@ class HyperAttention(torch.nn.Module):
         key_sorted = indexing(key, key_sort_idx, key_block_size)
         value_sorted = indexing(value, key_sort_idx, key_block_size)
 
+        import pdb;
+        pdb.set_trace();
+
         if key_block_size > 0:
 
             num_blocks = key_sorted.shape[2] // key_block_size

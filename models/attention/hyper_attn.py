@@ -99,18 +99,16 @@ class HyperAttention(torch.nn.Module):
                 return exact_attention(query, key, value, scale, causal=False)
 
         # 1. Sorted block-diagonal via sortLSH
-        _, query_sort_idx = torch.sort(self.lsh.hash(query), dim=2, stable=True) # batch_size x head_size x n
+        _, query_sort_idx = torch.sort(self.lsh.hash(query), dim=2, stable=True) # batch_size x head_size x n;  torch.Size([1, 128, 4096])
         _, key_sort_idx = torch.sort(self.lsh.hash(key), dim=2, stable=True)
         query_sort_idx_inv = torch.argsort(query_sort_idx, dim=2, stable=True) # for recovering the row order
 
         key_block_size = self.block_size
 
-        query_sorted = indexing(query, query_sort_idx, key_block_size)
+        query_sorted = indexing(query, query_sort_idx, key_block_size) # torch.Size([1, 128, 4096, 128])
         key_sorted = indexing(key, key_sort_idx, key_block_size)
         value_sorted = indexing(value, key_sort_idx, key_block_size)
 
-        import pdb;
-        pdb.set_trace();
 
         if key_block_size > 0:
 
@@ -121,6 +119,9 @@ class HyperAttention(torch.nn.Module):
             query_split_per_block = query_sorted.view(-1, 1, query_block_size, dim)
             key_split_per_block = key_sorted.view(-1, 1, key_block_size, dim)
             value_split_per_block = value_sorted.view(-1, 1, key_block_size, dim)
+
+            import pdb;
+            pdb.set_trace();
 
             if self.cuda:
                 attn_block, lse_block = exact_attention_cuda(
